@@ -1,12 +1,12 @@
 // ═══════════════════════════════════════════════════════════════
 // HOLLY CLUB - MENU VIEW COMPONENT (Con Imágenes)
 // ═══════════════════════════════════════════════════════════════
-
+ 
 import { useState, useMemo } from 'react';
 import { Plus, Minus, ShoppingCart } from 'lucide-react';
 import { PRODUCTS, PRODUCT_CATEGORIES } from '@/types';
 import type { Product, CartItem } from '@/types';
-
+ 
 interface MenuViewProps {
   cart: CartItem[];
   onAddToCart: (product: Product) => void;
@@ -15,7 +15,7 @@ interface MenuViewProps {
   onClearCart: () => void;
   onOpenCart: () => void;
 }
-
+ 
 export function MenuView({
   cart,
   onAddToCart,
@@ -23,20 +23,20 @@ export function MenuView({
   onOpenCart,
 }: MenuViewProps) {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
-
+ 
   const filteredProducts = useMemo(() => {
     if (selectedCategory === 'all') return PRODUCTS;
     return PRODUCTS.filter(p => p.category === selectedCategory);
   }, [selectedCategory]);
-
+ 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const cartCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-
+ 
   const getItemQuantity = (productId: string) => {
     const item = cart.find(i => i.id === productId);
     return item?.quantity || 0;
   };
-
+ 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -44,7 +44,7 @@ export function MenuView({
       minimumFractionDigits: 0,
     }).format(price);
   };
-
+ 
   return (
     <div className="flex flex-col h-full">
       {/* Category Filter */}
@@ -70,7 +70,7 @@ export function MenuView({
           ))}
         </div>
       </div>
-
+ 
       {/* Products Grid */}
       <div className="flex-1 overflow-y-auto p-4 pb-32">
         {selectedCategory === 'all' ? (
@@ -78,7 +78,7 @@ export function MenuView({
           PRODUCT_CATEGORIES.map((category) => {
             const categoryProducts = PRODUCTS.filter(p => p.category === category.id);
             if (categoryProducts.length === 0) return null;
-
+ 
             return (
               <div key={category.id} className="mb-8">
                 <h3 className="text-xl font-bold text-white mb-4 flex items-center gap-3">
@@ -116,7 +116,7 @@ export function MenuView({
           </div>
         )}
       </div>
-
+ 
       {/* Cart FAB */}
       {cartCount > 0 && (
         <button
@@ -133,7 +133,7 @@ export function MenuView({
     </div>
   );
 }
-
+ 
 interface ProductCardProps {
   product: Product;
   quantity: number;
@@ -141,7 +141,7 @@ interface ProductCardProps {
   onUpdateQuantity: (delta: number) => void;
   formatPrice: (price: number) => string;
 }
-
+ 
 function ProductCard({ product, quantity, onAdd, onUpdateQuantity, formatPrice }: ProductCardProps) {
   return (
     <div className="product-card group">
@@ -163,15 +163,15 @@ function ProductCard({ product, quantity, onAdd, onUpdateQuantity, formatPrice }
           </div>
         )}
         
-        {/* Add Button Overlay */}
+        {/* Add Button - Siempre visible (corregido para móvil) */}
         <button
           onClick={onAdd}
-          className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center text-white shadow-lg opacity-0 group-hover:opacity-100 transition-all duration-300 transform translate-y-2 group-hover:translate-y-0 hover:scale-110"
+          className="absolute bottom-3 right-3 w-10 h-10 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 flex items-center justify-center text-white shadow-lg opacity-100 transition-all duration-300 hover:scale-110"
         >
           <Plus className="w-5 h-5" />
         </button>
       </div>
-
+ 
       {/* Product Info */}
       <div className="p-3 relative">
         <h4 className="text-sm font-semibold text-white mb-1 line-clamp-2 leading-tight">
@@ -207,5 +207,5 @@ function ProductCard({ product, quantity, onAdd, onUpdateQuantity, formatPrice }
     </div>
   );
 }
-
+ 
 export default MenuView;
