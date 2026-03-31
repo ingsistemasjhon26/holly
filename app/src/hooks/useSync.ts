@@ -34,13 +34,12 @@ export function useSync(): UseSyncReturn {
 
   const updateStatus = useCallback((newStatus: SyncConfig['status']) => {
     setConfig(function(prev) {
-      if (typeof prev === 'function') {
-        return prev;
-      }
+      if (typeof prev === 'function') return prev;
       return { ...prev, status: newStatus };
     });
   }, [setConfig]);
 
+  // Google Apps Script requiere Content-Type: text/plain para evitar CORS preflight
   const makeRequest = useCallback(async (action: string, data: unknown): Promise<boolean> => {
     if (!config.scriptUrl || !config.enabled) {
       setLastError('Sincronización no configurada');
@@ -51,10 +50,13 @@ export function useSync(): UseSyncReturn {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
+      const body = JSON.stringify({ action, ...((data as object) || {}) });
+
       const response = await fetch(config.scriptUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action, data }),
+        // Google Apps Script ignora el preflight si usamos text/plain
+        headers: { 'Content-Type': 'text/plain' },
+        body,
         signal: controller.signal,
       });
 
@@ -96,9 +98,7 @@ export function useSync(): UseSyncReturn {
     
     if (success) {
       setConfig(function(prev) {
-        if (typeof prev === 'function') {
-          return prev;
-        }
+        if (typeof prev === 'function') return prev;
         return { ...prev, lastSync: Date.now() };
       });
     }
@@ -165,7 +165,7 @@ export function useSync(): UseSyncReturn {
     try {
       const response = await fetch(config.scriptUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ action: 'test' }),
       });
       
