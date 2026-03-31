@@ -1,7 +1,7 @@
 // ═══════════════════════════════════════════════════════════════
 // HOLLY CLUB - CART DRAWER COMPONENT (Premium)
 // ═══════════════════════════════════════════════════════════════
-
+ 
 import { useState } from 'react';
 import { Minus, Plus, Trash2, Receipt, Calculator, ShoppingCart } from 'lucide-react';
 import type { CartItem } from '@/types';
@@ -9,7 +9,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-
+ 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,7 +19,7 @@ interface CartDrawerProps {
   onClearCart: () => void;
   onSubmitOrder: (table: string, payAmount: number) => void;
 }
-
+ 
 export function CartDrawer({
   isOpen,
   onClose,
@@ -31,11 +31,11 @@ export function CartDrawer({
 }: CartDrawerProps) {
   const [table, setTable] = useState('');
   const [payAmount, setPayAmount] = useState('');
-
+ 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const payValue = parseFloat(payAmount) || 0;
   const change = payValue - cartTotal;
-
+ 
   const formatPrice = (price: number) => {
     return new Intl.NumberFormat('es-CO', {
       style: 'currency',
@@ -43,21 +43,17 @@ export function CartDrawer({
       minimumFractionDigits: 0,
     }).format(price);
   };
-
+ 
   const handleSubmit = () => {
     if (cart.length === 0) return;
-    if (!table.trim()) {
-      alert('Por favor ingresa el número de mesa');
-      return;
-    }
-    onSubmitOrder(table, payValue);
+    onSubmitOrder(table || 'Sin Mesa', payValue);
     setTable('');
     setPayAmount('');
     onClose();
   };
-
+ 
   const isValidPayment = payValue >= cartTotal;
-
+ 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent 
@@ -73,7 +69,7 @@ export function CartDrawer({
               <span className="text-gradient">Pedido Actual</span>
             </SheetTitle>
           </SheetHeader>
-
+ 
           <div className="flex-1 overflow-hidden flex flex-col">
             {cart.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-gray-500 px-6">
@@ -134,14 +130,14 @@ export function CartDrawer({
                     ))}
                   </div>
                 </div>
-
+ 
                 {/* Order Details - Fixed at bottom */}
                 <div className="border-t border-white/10 px-6 py-4 space-y-4 bg-black/50">
                   {/* Table Input */}
                   <div className="space-y-2">
                     <Label className="text-gray-400 text-sm flex items-center gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                      Mesa / Cliente
+                      Mesa / Cliente <span className="text-gray-600 text-xs">(opcional)</span>
                     </Label>
                     <Input
                       value={table}
@@ -150,7 +146,7 @@ export function CartDrawer({
                       className="input-glass"
                     />
                   </div>
-
+ 
                   {/* Payment Input */}
                   <div className="space-y-2">
                     <Label className="text-gray-400 text-sm flex items-center gap-2">
@@ -165,7 +161,7 @@ export function CartDrawer({
                       className="input-glass text-lg font-bold"
                     />
                   </div>
-
+ 
                   {/* Change Display */}
                   {payValue > 0 && (
                     <div className={`p-4 rounded-xl border ${
@@ -185,13 +181,13 @@ export function CartDrawer({
                       </div>
                     </div>
                   )}
-
+ 
                   {/* Total */}
                   <div className="flex justify-between items-center py-2 border-t border-white/10">
                     <span className="text-gray-400 text-lg">Total</span>
                     <span className="text-3xl font-bold text-gradient">{formatPrice(cartTotal)}</span>
                   </div>
-
+ 
                   {/* Actions */}
                   <div className="flex gap-3">
                     <Button
@@ -204,7 +200,7 @@ export function CartDrawer({
                     </Button>
                     <Button
                       onClick={handleSubmit}
-                      disabled={!table.trim() || cart.length === 0}
+                      disabled={cart.length === 0}
                       className="flex-1 bg-gradient-to-r from-cyan-400 to-purple-500 text-white font-bold hover:shadow-[0_0_20px_rgba(0,212,255,0.4)] disabled:opacity-50 transition-all"
                     >
                       <Receipt className="w-4 h-4 mr-2" />
@@ -220,5 +216,5 @@ export function CartDrawer({
     </Sheet>
   );
 }
-
+ 
 export default CartDrawer;
