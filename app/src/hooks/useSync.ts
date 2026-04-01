@@ -6,6 +6,8 @@ import { useState, useCallback } from 'react';
 import type { Order, SyncConfig } from '@/types';
 import { useLocalStorage } from './useLocalStorage';
 
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx_cvKx3bl8CydocZmBb775B4ytac-da5udfqBl6rX-JR5_dIt_GTqDvF0WnLVPJ4ho/exec';
+
 interface SyncActions {
   addOrder: (order: Order) => Promise<boolean>;
   updateOrderStatus: (orderId: string, status: string) => Promise<boolean>;
@@ -23,8 +25,8 @@ interface UseSyncReturn extends SyncActions {
 
 export function useSync(): UseSyncReturn {
   const [config, setConfig] = useLocalStorage<SyncConfig>('holly-club-sync-config', {
-    scriptUrl: '',
-    enabled: false,
+    scriptUrl: SCRIPT_URL,
+    enabled: true,
     lastSync: null,
     status: 'idle',
   });
@@ -39,22 +41,15 @@ export function useSync(): UseSyncReturn {
     });
   }, [setConfig]);
 
-  // Google Apps Script requiere Content-Type: text/plain para evitar CORS preflight
   const makeRequest = useCallback(async (action: string, data: unknown): Promise<boolean> => {
-    if (!config.scriptUrl || !config.enabled) {
-      setLastError('Sincronización no configurada');
-      return false;
-    }
-
     try {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 30000);
 
       const body = JSON.stringify({ action, ...((data as object) || {}) });
 
-      const response = await fetch(config.scriptUrl, {
+      const response = await fetch(SCRIPT_URL, {
         method: 'POST',
-        // Google Apps Script ignora el preflight si usamos text/plain
         headers: { 'Content-Type': 'text/plain' },
         body,
         signal: controller.signal,
@@ -73,7 +68,7 @@ export function useSync(): UseSyncReturn {
       setLastError(error instanceof Error ? error.message : 'Error de sincronización');
       return false;
     }
-  }, [config.scriptUrl, config.enabled]);
+  }, []);
 
   const addOrder = useCallback(async (order: Order): Promise<boolean> => {
     setIsSyncing(true);
@@ -160,10 +155,8 @@ export function useSync(): UseSyncReturn {
   }, [addOrder, updateStatus]);
 
   const testConnection = useCallback(async (): Promise<boolean> => {
-    if (!config.scriptUrl) return false;
-    
     try {
-      const response = await fetch(config.scriptUrl, {
+      const response = await fetch(SCRIPT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain' },
         body: JSON.stringify({ action: 'test' }),
@@ -174,7 +167,7 @@ export function useSync(): UseSyncReturn {
     } catch {
       return false;
     }
-  }, [config.scriptUrl]);
+  }, []);
 
   return {
     config,
